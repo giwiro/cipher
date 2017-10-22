@@ -1,5 +1,6 @@
 // @flow
 import * as React from 'react';
+import PropTypes from 'prop-types';
 
 type Props = {
   onSubmit: Function,
@@ -25,3 +26,10 @@ export default class CipherForm extends React.Component<Props> {
     )
   }
 }
+
+CipherForm.propTypes = {
+  onSubmit: PropTypes.func.isRequired,
+  onChange: PropTypes.func.isRequired,
+  phrase: PropTypes.string.isRequired,
+  keyword: PropTypes.string.isRequired,
+};
