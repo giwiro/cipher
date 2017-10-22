@@ -21,57 +21,33 @@ export default class Cipher extends React.Component<{}, State> {
   }
 
   encrypt(phrase: string, keyword: string) {
-    const abc = [...Array(26)].map((e, i) => String.fromCharCode(97 + i));
-    let abcMap = new Map();
-    let spacesIndexArray = [];
-    let phraseWOSpaces = '';
-    let count = 0;
-    const getIndexOfSpaces = (phrase, index) => {
-      let i = phrase.indexOf(' ', index);
-      if (i !== -1) {
-        spacesIndexArray.push(i - count);
-        count++;
-        getIndexOfSpaces(phrase, i + 1);
-      } else return false;
-    };
-    getIndexOfSpaces(phrase.split(''), 0);
-    const getPhraseWOSpaces = (phrase, index) => {
-      let i = phrase.indexOf(' ', index);
-      if (i !== -1) {
-        phraseWOSpaces = phrase.replace(' ', '');
-        getPhraseWOSpaces(phraseWOSpaces, i + 1);
-      } else return false;
-    };
-    getPhraseWOSpaces(phrase);
-
-    const phraseLength = phraseWOSpaces.length;
+    const phraseLength = phrase.length;
     const keywordLength = keyword.length;
     const keywordTimes = Math.floor(phraseLength / keywordLength);
-    const keywordMod = phraseLength % keywordLength;
-    const keywordForPhrase = keyword.repeat(keywordTimes).concat(keyword.substring(0, keywordMod));
-    [...Array(26)].map((e, i) => abcMap.set(abc[i], i + 1));
+    const keywordForPhrase = keyword.repeat(keywordTimes).concat(keyword.substring(0, phraseLength - keywordLength));
 
-    let sums = [...Array(phraseLength)].map((e, i) => {
-      let total = abcMap.get(phraseWOSpaces.substring(i, i + 1)) + abcMap.get(keywordForPhrase.substring(i, i + 1));
-      if (total >= 26) {
-        total = total % 26;
-      }
-      return (total);
-    });
+    const getRightChar = (charCode) => {
+      if (charCode > 123) {
+        return getRightChar(charCode - 122);
+      } else if (charCode < 97) {
+        return charCode + 26;
+      } else return charCode;
+    };
 
-    let result: String = '';
-    sums.map((e, i) => {
-      if (spacesIndexArray.includes(i)) {
-        result = result.concat(' ');
-      }
-      result = result.concat(abc[(sums[i] - 1) === -1 ? 25 : (sums[i] - 1)]);
-    });
+    let phraseArray = phrase.split(' ');
+    let iStart = 0;
+    let result: String;
+    result = phraseArray.map(e =>
+      Array.prototype.map.call(e, x =>
+        String.fromCharCode(getRightChar(x.charCodeAt(0) + keywordForPhrase.substr(iStart++, 1).charCodeAt(0)))
+      ).join('')
+    ).join(' ');
+
     this.setState({
         ePhrase: result,
       }
     )
   }
-
 
   handleChange(event: SyntheticEvent<HTMLInputElement>) {
     this.setState({
