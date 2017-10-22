@@ -8,10 +8,24 @@ type State = {
   ePhrase: string,
 }
 
+// Padding to take care
+const padding = 17;
+// a
+const baseCharCode = 97;
+// z
+const endCharCode = 122;
+
+const ex = (a: string, b: string) => {
+  let r = (((a.charCodeAt(0) + b.charCodeAt(0)) - 97) % 26) + 97;
+  r = r >= (baseCharCode + padding) ? r - padding : endCharCode - (padding - (r - baseCharCode));
+  // console.log(`${a} + ${b} = ${String.fromCharCode(r)}`);
+  return String.fromCharCode(r);
+};
+
 export default class Cipher extends React.Component<{}, State> {
   state = {
-    phrase: '',
-    keyword: '',
+    phrase: 'hola chau chau',
+    keyword: 'bye',
     ePhrase: '',
   };
 
@@ -21,30 +35,18 @@ export default class Cipher extends React.Component<{}, State> {
   }
 
   encrypt(phrase: string, keyword: string) {
-    const phraseLength = phrase.length;
-    const keywordLength = keyword.length;
-    const keywordTimes = Math.floor(phraseLength / keywordLength);
-    const keywordForPhrase = keyword.repeat(keywordTimes).concat(keyword.substring(0, phraseLength - keywordLength));
-
-    const getRightChar = (charCode) => {
-      if (charCode > 123) {
-        return getRightChar(charCode - 122);
-      } else if (charCode < 97) {
-        return charCode + 26;
-      } else return charCode;
-    };
-
-    let phraseArray = phrase.split(' ');
-    let iStart = 0;
-    let result: String;
-    result = phraseArray.map(e =>
-      Array.prototype.map.call(e, x =>
-        String.fromCharCode(getRightChar(x.charCodeAt(0) + keywordForPhrase.substr(iStart++, 1).charCodeAt(0)))
-      ).join('')
-    ).join(' ');
-
+    const phraseLen = phrase.length;
+    const keywordLen = keyword.length;
+    let r = '';
+    let hopCount = 0;
+    for (let i = 0; i < phraseLen; i ++) {
+      if (phrase[i] === ' ') {
+        r += ' ';
+        hopCount++;
+      } else r += ex(phrase[i], keyword[(i - hopCount) % keywordLen]);
+    }
     this.setState({
-        ePhrase: result,
+        ePhrase: r,
       }
     )
   }
